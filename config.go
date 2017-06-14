@@ -6,7 +6,6 @@ import (
 	"text/template"
 
 	"github.com/google/go-github/github"
-	"github.com/taskcluster/shell"
 )
 
 // Configuration is a Go representation of the contents of config.json.
@@ -62,7 +61,7 @@ func (rc RepoCommand) GetArgs(e github.PushEvent, repo string) []string {
 		if err != nil {
 			log.Printf("NOTICE: arg '%s' (#%d) for '%s' (%s) is not valid: %s", arg, i, rc.Command, repo, err.Error())
 		}
-		args[i] = shell.Escape(finalArg)
+		args[i] = finalArg
 	}
 	return args
 }

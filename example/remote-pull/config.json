@@ -1,0 +1,19 @@
+{
+    "Listen": ":4592",
+    "Security": {
+        "CustomPath": "github-webhook",
+        "Secret": "lockandkey"
+    },
+    "Repositories": [
+        {
+            "Repository": "astei/example.com-website",
+            "Commands": [
+                {
+                    "Command": "/bin/bash",
+                    "Args": ["/var/www/example.com/remote-pull.sh", "{{.Ref}}"],
+                    "Cwd": "/var/www/example.com"
+                }
+            ]
+        }
+    ]
+}
