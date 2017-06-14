@@ -1,0 +1,18 @@
+{
+    "Listen": ":9501",
+    "Security": {
+        "CustomPath": "abcxyz",
+        "Secret": ""
+    },
+    "Repositories": [
+        {
+            "Repository": "astei/example",
+            "Commands": [
+                {
+                    "Command": "echo",
+                    "Args": ["Hello, I was run by {{.Ref}} from a push by {{.Pusher.Login}}"]
+                }
+            ]
+        }
+    ]
+}
