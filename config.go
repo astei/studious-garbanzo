@@ -34,6 +34,7 @@ type Configuration struct {
 	} `json:"Repositories"`
 }
 
+// RepoCommand represents a command to run for this repository.
 type RepoCommand struct {
 	// The command to execute.
 	Command string `json:"Command"`
@@ -45,14 +46,15 @@ type RepoCommand struct {
 // GetArgs gets the parsed and escaped arguments for the command.
 func (rc RepoCommand) GetArgs(e github.PushEvent, repo string) []string {
 	args := make([]string, len(rc.Args))
+	var buf bytes.Buffer
 	for i, arg := range rc.Args {
 		finalArg := arg
 		tmpl, err := template.New("").Parse(arg)
 		if err == nil {
-			var buf bytes.Buffer
 			if err = tmpl.Execute(&buf, e); err == nil {
 				finalArg = buf.String()
 			}
+			buf.Truncate(0)
 		}
 		if err != nil {
 			log.Printf("NOTICE: arg '%s' (#%d) for '%s' (%s) is not valid: %s", arg, i, rc.Command, repo, err.Error())

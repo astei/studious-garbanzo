@@ -2,19 +2,13 @@ package main
 
 import (
 	"bytes"
-	"crypto/hmac"
-	"crypto/sha1"
-	"encoding/hex"
 	"encoding/json"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 
 	"io"
-
-	"strings"
 
 	"github.com/google/go-github/github"
 )
@@ -33,6 +27,7 @@ func onGitHubPush(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Read and buffer the whole payload, to a limit of 5MB
 	r.Body = http.MaxBytesReader(w, r.Body, maxPayloadSize)
 	defer r.Body.Close()
 	var body bytes.Buffer
@@ -42,19 +37,8 @@ func onGitHubPush(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if config.Security.Secret != "" {
-		// Verify the secret
-		secret := r.Header.Get("X-Hub-Signature")
-		if secret == "" {
-			w.WriteHeader(http.StatusBadRequest)
-			io.WriteString(w, "no signature")
-			return
-		}
-
-		mac := hmac.New(sha1.New, []byte(config.Security.Secret))
-		mac.Write(body.Bytes())
-		computed := "sha1=" + hex.EncodeToString(mac.Sum(nil))
-
-		if !hmac.Equal([]byte(computed), []byte(secret)) {
+		// Verify the signature
+		if !verifyGitHubEventSignature(r.Header.Get("X-Hub-Signature"), config.Security.Secret, body.Bytes()) {
 			w.WriteHeader(http.StatusBadRequest)
 			io.WriteString(w, "invalid signature")
 			return
@@ -68,17 +52,11 @@ func onGitHubPush(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var e github.PushEvent
-	var jsonBody io.Reader
-	if r.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
-		v, err := url.ParseQuery(body.String())
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			io.WriteString(w, "invalid form")
-			return
-		}
-		jsonBody = strings.NewReader(v.Get("payload"))
-	} else {
-		jsonBody = &body
+	jsonBody, err := getEventPayload(r, &body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, "invalid payload sent")
+		return
 	}
 	if err := json.NewDecoder(jsonBody).Decode(&e); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
