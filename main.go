@@ -33,6 +33,8 @@ func onGitHubPush(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.Body = http.MaxBytesReader(w, r.Body, maxPayloadSize)
+	defer r.Body.Close()
 	var body bytes.Buffer
 	if _, err := body.ReadFrom(r.Body); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
