@@ -70,6 +70,9 @@ func onGitHubPush(w http.ResponseWriter, r *http.Request) {
 			for _, cmdConfig := range repoConfig.Commands {
 				// Now execute the commands
 				ex := exec.Command(cmdConfig.Command, cmdConfig.GetArgs(e, repoConfig.Repository)...)
+				if cmdConfig.Cwd != "" {
+					ex.Dir = cmdConfig.Cwd
+				}
 				if err := ex.Run(); err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
 					io.WriteString(w, "couldn't run command: "+err.Error())

@@ -41,6 +41,9 @@ type RepoCommand struct {
 
 	// The arguments to use.
 	Args []string `json:"Args"`
+
+	// The current directory to use when running the command.
+	Cwd string `json:"Cwd"`
 }
 
 // GetArgs gets the parsed and escaped arguments for the command.

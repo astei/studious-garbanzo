@@ -1,16 +1,17 @@
 {
-    "Listen": ":9501",
+    "Listen": ":4592",
     "Security": {
-        "CustomPath": "abcxyz",
-        "Secret": ""
+        "CustomPath": "github-webhook",
+        "Secret": "lockandkey"
     },
     "Repositories": [
         {
-            "Repository": "astei/example",
+            "Repository": "astei/studious-garbanzo",
             "Commands": [
                 {
-                    "Command": "echo",
-                    "Args": ["Hello, I was run by {{.Ref}} from a push by {{.Pusher.Login}}"]
+                    "Command": "say",
+                    "Args": ["New push to {{.Ref}} in {{.Repo.FullName}} by {{.Sender.Login}}"],
+                    "Cwd": "/Users/andrew"
                 }
             ]
         }
